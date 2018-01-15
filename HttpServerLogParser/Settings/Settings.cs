@@ -5,14 +5,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HttpServerLogParser
+namespace HttpServerLogParser.Settings
 {
-    public class Settings
+    class ApplicationSettings
     {
         public int ThreadsCount { get; set; }
         public string Filename { get; set; }
-        public string ConnectionString { get; set; }
-        public string GeolocationServer { get; set; }
         public CancellationTokenSource Cancelation { get; set; }
     }
 }

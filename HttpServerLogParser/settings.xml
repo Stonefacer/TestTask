@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FileSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <!--Database connection string-->
+  <ConnectionString>Data Source=DESKTOP-BU7V671\SQLEXPRESS14;Initial Catalog=NasaHttpServerStatistic;Persist Security Info=True;User ID=ttt;Password=q1w2e3r4</ConnectionString>
+  
+  <!-- Geolocation settings -->
+  <Geolocation>
+    <!-- http://freegeoip.net by default -->
+    <Server>http://localhost:8080</Server>
+    <!-- Results will be cached until cache size exceeds that number -->
+    <MaxCacheSize>1000000</MaxCacheSize>
+    <!-- If server failed to respond we will try again and again untill count of tries exceeds that number or server respond correctly -->
+    <MaxTriesCount>2</MaxTriesCount>
+    <!-- Count of ms need to wait between tries -->
+    <TryTimeout>1000</TryTimeout>
+  </Geolocation>
+
+  <!-- Parser settings -->
+  <Parser>
+    <!-- Extensions must be skipped -->
+    <SkippibaleExtensions>
+      <string>css</string>
+      <string>map</string>
+      <string>jpg</string>
+      <string>jpeg</string>
+      <string>png</string>
+      <string>gif</string>
+      <string>bmp</string>
+      <string>tiff</string>
+      <string>js</string>
+      <string>xbm</string>
+    </SkippibaleExtensions>
+  </Parser>
+
+  <!-- File reader settings -->
+  <FileReader>
+    <!-- Maximal count of lines can be stored in memory as a buffer -->
+    <MaxBufferSize>1000000</MaxBufferSize>
+  </FileReader>
+</FileSettings>

@@ -12,6 +12,8 @@ using LogParser.LinesSource;
 using GeoLocation;
 using Database;
 
+using HttpServerLogParser.Settings;
+
 namespace HttpServerLogParser
 {
     public class NinjectCommon
@@ -39,8 +41,7 @@ namespace HttpServerLogParser
         private NinjectCommon()
         {
             _kernel = new StandardKernel();
-            _kernel.Bind<Settings>().ToSelf().InSingletonScope();
-            _kernel.Bind<IParser>().To<Parser>().InTransientScope();
+            _kernel.Bind<ApplicationSettings>().ToSelf().InSingletonScope();
             _kernel.Bind<Worker>().ToSelf().InThreadScope();
         }
 
@@ -59,23 +60,29 @@ namespace HttpServerLogParser
         /// <param name="fileInfo">file need to process</param>
         public void BindLinesSource(FileInfo fileInfo)
         {
+            var fileSettings = Kernel.Get<FileSettings>();
             if (fileInfo.Length < MaximalFileSize)
             {
                 _kernel.Bind<ILinesSource>().ToMethod(x => LinesSourceMemory.CreateFromFile(fileInfo)).InSingletonScope();
             }
             else
             {
-                _kernel.Bind<ILinesSource>().ToMethod(x => new LinesSourceFile(fileInfo)).InSingletonScope();
+                _kernel.Bind<ILinesSource>().ToMethod(x => new LinesSourceFile(fileInfo, fileSettings.FileReader.MaxBufferSize)).InSingletonScope();
             }
         }
 
         /// <summary>
-        /// Create bind for IGeoLocationFinder interface will be used for geolocation
+        /// Bind FileSettings class and all dependencies
         /// </summary>
-        /// <param name="geolocationServer">geolocation server hostname</param>
-        public void BindGeolocationServer(string geolocationServer)
+        public void BindFileSettings(FileSettings fileSettings)
         {
-            _kernel.Bind<IGeoLocationFinder>().To<GeoLocationFreegeoip>().InSingletonScope().WithConstructorArgument("freegeoipHostname", geolocationServer);
+            _kernel.Bind<FileSettings>().ToConstant(fileSettings);
+            _kernel.Bind<IParser>().To<Parser>().InTransientScope().WithConstructorArgument("skippibleExtensions", fileSettings.Parser.SkippibaleExtensions);
+            _kernel.Bind<IGeoLocationFinder>().To<GeoLocationFreegeoip>().InSingletonScope()
+                .WithConstructorArgument("freegeoipHostname", fileSettings.Geolocation.Server)
+                .WithConstructorArgument("maxTriesCount", fileSettings.Geolocation.MaxTriesCount)
+                .WithConstructorArgument("tryTimeout", fileSettings.Geolocation.TryTimeout)
+                .WithConstructorArgument("maxCacheSize", fileSettings.Geolocation.MaxCacheSize);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 using Ninject;
 
@@ -12,8 +13,11 @@ using LogParser;
 using LogParser.LinesSource;
 using GeoLocation;
 
+using HttpServerLogParser.Settings;
+
 namespace HttpServerLogParser
 {
+
     class Program
     {
         private const string HelpMessage = @"
@@ -36,22 +40,29 @@ warning:
         static void Main(string[] args)
         {
             var ninject = NinjectCommon.Instance();
-            var settings = ninject.Kernel.Get<Settings>();
+            var settings = ninject.Kernel.Get<ApplicationSettings>();
 
             // default settings
             settings.ThreadsCount = 1;
             settings.Cancelation = new CancellationTokenSource();
 
-            // save start date time for benchmarks
-            var startDatetime = DateTime.Now;
+            // parse command line
             if (!ParseCommandLineArguments(args))
             {
                 return; // command line arguments cannot be parsed
             }
+            // load settings from file
+            var fileSettings = LoadSettingsFile();
+            if (fileSettings == null)
+            {
+                PrintMessage("Settings cannot be loaded. Please check settings.xml file.");
+                return;
+            }
+            ninject.BindFileSettings(fileSettings);
 
             // output settings
             Console.WriteLine("Filename: {0}", settings.Filename);
-            Console.WriteLine("Connection settings: {0}", settings.ConnectionString);
+            Console.WriteLine("Connection settings: {0}", fileSettings.ConnectionString);
             Console.WriteLine("Threads count: {0}", settings.ThreadsCount);
 
             // check file existance
@@ -63,15 +74,17 @@ warning:
             }
 
             // bind rest of interfaces
-            ninject.BindDatabaseProvider(settings.ConnectionString);
+            ninject.BindDatabaseProvider(fileSettings.ConnectionString);
             ninject.BindLinesSource(fileInfo);
-            ninject.BindGeolocationServer(settings.GeolocationServer);
 
             // bind ctrl+c event so we could free resources correctly
             Console.CancelKeyPress += Console_CancelKeyPress;
 
             // create and start worker threads
             var threads = CreateWorkers();
+
+            // save start date time for benchmarks
+            var startDatetime = DateTime.Now;
 
             // wait for threads to exit
             var linesSource = ninject.Kernel.Get<ILinesSource>();
@@ -90,11 +103,60 @@ warning:
             Console.WriteLine("Done in {0:00}:{1:00}:{2:00}.{3:000}", timeSpend.TotalHours, timeSpend.Minutes, timeSpend.Seconds, timeSpend.Milliseconds);
         }
 
+        private static FileSettings LoadSettingsFile()
+        {
+            if (!File.Exists("settings.xml"))
+            {
+                return null;
+            }
+            var xmlSerializer = new XmlSerializer(typeof(FileSettings));
+            using (var streamReader = new StreamReader("settings.xml"))
+            {
+                var fileSettings = new FileSettings();
+                fileSettings.Geolocation = new GeolocationSettings();
+                fileSettings.ConnectionString = "";
+                fileSettings.Geolocation.Server = "";
+                return xmlSerializer.Deserialize(streamReader) as FileSettings;
+            }
+        }
+
+        private static void SaveSettingsFile()
+        {
+            var xmlSerializer = new XmlSerializer(typeof(FileSettings));
+            using (var streamWriter = new StreamWriter("settings.xml"))
+            {
+                var fileSettings = new FileSettings();
+                fileSettings.ConnectionString = "";
+
+                fileSettings.Geolocation = new GeolocationSettings();
+                fileSettings.Geolocation.Server = "";
+
+                fileSettings.Parser = new ParserSettings();
+                fileSettings.Parser.SkippibaleExtensions = new string[]
+                {
+                    "css",
+                    "map",
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "gif",
+                    "bmp",
+                    "tiff",
+                    "js",
+                    "xbm"
+                };
+
+                fileSettings.FileReader = new FileReaderSettings();
+                fileSettings.FileReader.MaxBufferSize = 1000000;
+                xmlSerializer.Serialize(streamWriter, fileSettings);
+            }
+        }
+
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
             PrintMessage("Exiting...");
             var ninject = NinjectCommon.Instance();
-            var settings = ninject.Kernel.Get<Settings>();
+            var settings = ninject.Kernel.Get<ApplicationSettings>();
             // request termination of worker threads
             settings.Cancelation.Cancel();
             // cancel process termination
@@ -151,8 +213,8 @@ warning:
         private static bool ParseCommandLineArguments(string[] args)
         {
             var ninject = NinjectCommon.Instance();
-            var settings = ninject.Kernel.Get<Settings>();
-            if (args.Length < 3)
+            var settings = ninject.Kernel.Get<ApplicationSettings>();
+            if (args.Length < 1)
             {
                 PrintHelp();
                 return false;
@@ -162,7 +224,7 @@ warning:
                 var currentArgument = args[argumentIndex];
                 if (currentArgument == "/t") // set count of threads
                 {
-                    if (argumentIndex == args.Length - 1) // one argument missed
+                    if (args.Length < 3) // one or two arguments missed
                     {
                         PrintHelp();
                         return false;
@@ -185,23 +247,6 @@ warning:
                 else
                 {
                     settings.Filename = currentArgument;
-                    if (args.Length - argumentIndex < 3)
-                    {
-                        PrintHelp();
-                        return false;
-                    }
-
-                    argumentIndex++; // move to the freegeoip server
-                    var geolocationServer = args[argumentIndex];
-                    // add http:// to the start of string if needed
-                    if (!geolocationServer.StartsWith("http://") && !geolocationServer.StartsWith("https://"))
-                    {
-                        geolocationServer = "http://" + geolocationServer;
-                    }
-                    settings.GeolocationServer = geolocationServer;
-
-                    argumentIndex++; // move to connection string
-                    settings.ConnectionString = args[argumentIndex];
                 }
             }
             return true;
@@ -214,7 +259,7 @@ warning:
         private static Thread[] CreateWorkers()
         {
             var ninject = NinjectCommon.Instance();
-            var settings = ninject.Kernel.Get<Settings>();
+            var settings = ninject.Kernel.Get<ApplicationSettings>();
             var threads = new Thread[settings.ThreadsCount];
             for (int i = 0; i < settings.ThreadsCount; i++)
             {
@@ -231,7 +276,7 @@ warning:
         private static void ThreadWorker()
         {
             var ninject = NinjectCommon.Instance();
-            var settings = ninject.Kernel.Get<Settings>();
+            var settings = ninject.Kernel.Get<ApplicationSettings>();
             var worker = ninject.Kernel.Get<Worker>();
             try
             {

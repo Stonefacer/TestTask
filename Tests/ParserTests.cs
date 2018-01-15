@@ -30,7 +30,7 @@ namespace Tests
         {
             var fileInfo = new FileInfo(filename);
             ILinesSource linesSource = LinesSourceMemory.CreateFromFile(fileInfo);
-            IParser parser = new Parser(linesSource);
+            IParser parser = new Parser(linesSource, new string[] { "css", "map", "jpg", "jpeg", "png", "gif", "bmp", "tiff", "js", "xbm" });
             RequestData requestData;
             for (var i = 0; i < dataExpected.Length; i++)
             {

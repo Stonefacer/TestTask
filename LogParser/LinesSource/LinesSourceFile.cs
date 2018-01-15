@@ -10,29 +10,28 @@ namespace LogParser.LinesSource
     public class LinesSourceFile : ILinesSource
     {
 
-        // maximal count of lines in queue
-        private const int MaxBufferSize = 1000000;
-
         private long _filePosition;
         private long _fileLength;
         private FileInfo _fileInfo;
         private Queue<string> _linesQueue;
         private Object _syncRoot = new Object();
+        private int _maxBufferSize;
 
         public long FilePosition { get => _filePosition; }
 
         public long FileTotalBytes { get => _fileLength; }
 
-        public long CurrentBufferPosition { get => MaxBufferSize - _linesQueue.Count; }
+        public long CurrentBufferPosition { get => _maxBufferSize - _linesQueue.Count; }
 
-        public long BufferSize { get => MaxBufferSize; }
+        public long BufferSize { get => _maxBufferSize; }
 
-        public LinesSourceFile(FileInfo fileInfo)
+        public LinesSourceFile(FileInfo fileInfo, int maxBufferSize)
         {
             _fileInfo = fileInfo;
             _filePosition = 0;
             _fileLength = fileInfo.Length;
-            _linesQueue = new Queue<string>(MaxBufferSize);
+            _maxBufferSize = maxBufferSize;
+            _linesQueue = new Queue<string>(_maxBufferSize);
         }
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace LogParser.LinesSource
             using (var fileStream = _fileInfo.OpenRead())
             {
                 fileStream.Seek(_filePosition, SeekOrigin.Begin); // seek to the lastly readed position
-                while (_linesQueue.Count < MaxBufferSize && fileStream.Position != fileStream.Length )
+                while (_linesQueue.Count < _maxBufferSize && fileStream.Position != fileStream.Length )
                 {
                     var newLine = ReadLine(fileStream);
                     _linesQueue.Enqueue(newLine);

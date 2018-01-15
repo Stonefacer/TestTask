@@ -12,26 +12,14 @@ namespace GeoLocation
 {
     public class GeoLocationFreegeoip : IGeoLocationFinder
     {
-        /// <summary>
-        /// Results will be cached until cache size exceeds that number
-        /// </summary>
-        private const int MaxCacheSize = 1000000;
-
-        /// <summary>
-        /// If server failed to respond we will try again and again untill count of tries exceeds that number
-        /// </summary>
-        private const int MaxTriesCount = 10;
-
-        /// <summary>
-        /// Count of ms need to wait between tries
-        /// </summary>
-        private const int TryTimeout = 100;
-
         
         private string _requestUrlTemplate;
         private ConcurrentDictionary<string, string> _cache = new ConcurrentDictionary<string, string>();
+        private int _maxTriesCount;
+        private int _tryTimeout;
+        private int _maxCacheSize;
 
-        public GeoLocationFreegeoip(string freegeoipHostname)
+        public GeoLocationFreegeoip(string freegeoipHostname, int maxTriesCount, int tryTimeout, int maxCacheSize)
         {
             _requestUrlTemplate = string.Format("{0}/json/{{0}}", freegeoipHostname);
         }
@@ -84,16 +72,16 @@ namespace GeoLocation
             }
             string country;
             var result = SendRequest(host, out country);
-            for(var tries = 1;tries < MaxTriesCount && !result; tries++)
+            for(var tries = 1;tries < _maxTriesCount && !result; tries++)
             {
-                Thread.Sleep(TryTimeout);
+                Thread.Sleep(_tryTimeout);
                 result = SendRequest(host, out country);
             }
             if (!result)
             {
                 throw new WebException("server is down or limit of requests exceeded");
             }
-            if(_cache.Count < MaxCacheSize)
+            if(_cache.Count < _maxCacheSize)
             {
                 _cache[host] = country;
             }

@@ -18,25 +18,15 @@ namespace LogParser
         private string _currentLine;
         private int _currentIndex; // number of symbols to skip
         private HashSet<string> _skippibleExtensions;
+        private int _extensionMaximalLength;
 
         public string CurrentLine { get => _currentLine; }
 
-        public Parser(ILinesSource linesSource)
+        public Parser(ILinesSource linesSource, string[] skippibleExtensions)
         {
             _linesSource = linesSource;
-            _skippibleExtensions = new HashSet<string>()
-            {
-                "css",
-                "map",
-                "jpg",
-                "jpeg",
-                "png",
-                "gif",
-                "bmp",
-                "tiff",
-                "js",
-                "xbm"
-            };
+            _skippibleExtensions = new HashSet<string>(skippibleExtensions.Distinct());
+            _extensionMaximalLength = _skippibleExtensions.Max(x=>x.Length);
         }
 
         // position of _currentIndex can be any
@@ -129,7 +119,7 @@ namespace LogParser
             {
                 return false;
             }
-            var maxExtensionLength = 5; // if there is no extensions at the last 5 symbols then nothing to check
+            var maxExtensionLength = _extensionMaximalLength;
             if (maxExtensionLength > route.Length)
             {
                 maxExtensionLength = route.Length;

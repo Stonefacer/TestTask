@@ -15,7 +15,7 @@ namespace Tests
         public void PerfectFileTest()
         {
             var fileInfo = new FileInfo("..\\..\\tests_logs\\perfect_file.log");
-            ILinesSource linesSource = new LinesSourceFile(fileInfo);
+            ILinesSource linesSource = new LinesSourceFile(fileInfo, 1000000);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
                 while (!sr.EndOfStream)
@@ -37,7 +37,7 @@ namespace Tests
         public void EmptyFileTest()
         {
             var fileInfo = new FileInfo("..\\..\\tests_logs\\empty.log");
-            ILinesSource linesSource = new LinesSourceFile(fileInfo);
+            ILinesSource linesSource = new LinesSourceFile(fileInfo, 1000000);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
                 while (!sr.EndOfStream)
@@ -59,7 +59,7 @@ namespace Tests
         public void TruncatedFileTest()
         {
             var fileInfo = new FileInfo("..\\..\\tests_logs\\truncated_file.log");
-            ILinesSource linesSource = new LinesSourceFile(fileInfo);
+            ILinesSource linesSource = new LinesSourceFile(fileInfo, 1000000);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
                 while (!sr.EndOfStream)
