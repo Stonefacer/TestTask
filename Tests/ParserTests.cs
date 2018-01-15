@@ -45,8 +45,7 @@ namespace Tests
             var mustBeFalseToo = parser.ProcessOneLine(out requestData, out mustBeFalse);
             Assert.AreEqual(false, mustBeFalse);
             Assert.AreEqual(false, mustBeFalseToo);
-            var emptyRequestedData = new RequestData();
-            CheckDataEquality(emptyRequestedData, requestData);
+            Assert.AreEqual(requestData, null);
         }
 
         [TestMethod]
@@ -83,14 +82,14 @@ namespace Tests
                     QueryString = ""
                 }
             };
-            CheckFile(".\\logs\\perfect_file.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\perfect_file.log", dataExpected);
         }
 
         [TestMethod]
         public void EmptyFileTest()
         {
             var dataExpected = new RequestData[0];
-            CheckFile(".\\logs\\empty.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\empty.log", dataExpected);
         }
 
         [TestMethod]
@@ -144,7 +143,7 @@ namespace Tests
                     Route = "/images/\">index of /images"
                 }
             };
-            CheckFile(".\\logs\\truncated_file.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\truncated_file.log", dataExpected);
         }
 
     }

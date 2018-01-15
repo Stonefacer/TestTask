@@ -48,15 +48,6 @@ namespace LogParser
             return _currentLine.Substring(startIndex, endIndex - startIndex);
         }
 
-        private bool SkipProperty()
-        {
-            var startIndex = _currentIndex;
-            var endIndex = _currentLine.IndexOf(' ', _currentIndex);
-            _currentIndex = endIndex + 1;
-            return _currentIndex != 0;
-        }
-
-
         // position of _currentIndex can be any
         private DateTime ParseDateTime()
         {
@@ -163,23 +154,29 @@ namespace LogParser
         public bool ProcessOneLine(out RequestData requestData, out bool keepAlive)
         {
             keepAlive = _linesSource.GetLine(out _currentLine);
+
             // skip empty lines
             while (keepAlive && _currentLine == String.Empty)
             {
                 keepAlive = _linesSource.GetLine(out _currentLine);
             }
-            requestData = new RequestData();
-            if (!keepAlive) // end of data
+
+            // check end of data
+            if (!keepAlive) 
             {
+                requestData = null;
                 return false;
             }
-            // parse data in quotes first to check is it skippable element or not
+
+            // parse data in quotes first to check is it skippable line or not
             string query;
             var route = ParseUri(out query);
             if (IsSkippible(route))
             {
+                requestData = null;
                 return false;
             }
+            requestData = new RequestData();
             requestData.Route = route;
             requestData.QueryString = query;
 

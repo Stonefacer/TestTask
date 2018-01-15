@@ -26,7 +26,7 @@ namespace WebApi.Controllers
         }
 
         // GET api/clients/{count}
-        [OutputCache(Duration = 60, VaryByParam = "count")]
+        [OutputCache(Duration = 10, VaryByParam = "count")]
         public IEnumerable<ClientRating> Get(int count = 10)
         {
             if (count < 1)

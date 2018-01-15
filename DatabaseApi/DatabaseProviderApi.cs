@@ -14,7 +14,6 @@ namespace DatabaseApi
     public class DatabaseProviderApi: IDatabaseProviderApi
     {
         private SqlConnection _sqlConnection;
-        private string _connectionString;
         private bool _silent;
 
         /// <summary>
@@ -23,7 +22,6 @@ namespace DatabaseApi
         /// <param name="silent">if true any methods won't throw any exceptions</param>
         public DatabaseProviderApi(string connectionString, bool silent)
         {
-            _connectionString = connectionString;
             _sqlConnection = new SqlConnection(connectionString);
             _silent = silent;
         }

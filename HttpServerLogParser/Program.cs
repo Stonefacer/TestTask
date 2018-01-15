@@ -31,19 +31,23 @@ warning:
     only default log format is supported (which is ""%h %l %u %t \""%r\"" %>s %b"")
 ";
 
+        private static Object _syncOutput = new Object();
+
         static void Main(string[] args)
         {
             var ninject = NinjectCommon.Instance();
             var settings = ninject.Kernel.Get<Settings>();
+            
             // default settings
             settings.ThreadsCount = 1;
+
             // save start date time for benchmarks
             var startDatetime = DateTime.Now;
-
             if (!ParseCommandLineArguments(args))
             {
                 return; // command line arguments cannot be parsed
             }
+
             // output settings
             Console.WriteLine("Filename: {0}", settings.Filename);
             Console.WriteLine("Connection settings: {0}", settings.ConnectionString);
@@ -85,6 +89,9 @@ warning:
 #endif
         }
 
+        /// <summary>
+        /// Print help message
+        /// </summary>
         private static void PrintHelp()
         {
             Console.WriteLine(HelpMessage);
@@ -153,6 +160,10 @@ warning:
             return true;
         }
 
+        /// <summary>
+        /// Creates array of threads to process a file
+        /// </summary>
+        /// <returns>created array of threads</returns>
         private static Thread[] CreateWorkers()
         {
             var ninject = NinjectCommon.Instance();
@@ -167,12 +178,45 @@ warning:
             return threads;
         }
 
+        /// <summary>
+        /// Start method for each thread
+        /// </summary>
         private static void ThreadWorker()
         {
             var ninject = NinjectCommon.Instance();
             using (var worker = ninject.Kernel.Get<Worker>())
             {
-                worker.ProcessFile();
+                try
+                {
+                    worker.ProcessFile();
+                }
+                catch (Exception ex)
+                {
+                    FailedMessage(worker.CurrentLine, ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Output error message based on failed line and exception
+        /// </summary>
+        /// <param name="lineWithError">failed line</param>
+        /// <param name="exception">thrown exception</param>
+        private static void FailedMessage(string lineWithError, Exception exception)
+        {
+            lock (_syncOutput)
+            {
+                Console.WriteLine("Failed to parse line: \"{0}\"", lineWithError);
+                Console.WriteLine("Thread terminated!");
+                Console.WriteLine("-------------Exceptions------------");
+                while (exception != null)
+                {
+                    Console.WriteLine("Type: {0}", exception.GetType().FullName);
+                    Console.WriteLine("Message: {0}", exception.Message);
+                    Console.WriteLine("Stack trace: {0}", exception.StackTrace);
+                    Console.WriteLine();
+                    exception = exception.InnerException;
+                }
             }
         }
     }

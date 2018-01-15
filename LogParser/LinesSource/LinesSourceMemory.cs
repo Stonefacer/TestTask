@@ -26,11 +26,14 @@ namespace LogParser.LinesSource
 
         private int _lastIndex = 0;
         private string _dataSource;
-        private Object _syncRoot = new Object(); // object for syncranizations
+        private Object _syncRoot = new Object(); // object for synchronizations
 
         public long FilePosition { get => _lastIndex; }
+
         public long FileTotalBytes { get => _dataSource.Length; }
+
         public long CurrentBufferPosition { get => _lastIndex; }
+
         public long BufferSize { get => _dataSource.Length; }
 
         private LinesSourceMemory(string data)
@@ -45,20 +48,20 @@ namespace LogParser.LinesSource
         /// <returns>resturns false if end of file reached and true otherwise</returns>
         public bool GetLine(out string line)
         {
-            lock(_syncRoot)
+            lock (_syncRoot)
             {
-                if(_lastIndex >= _dataSource.Length) // certanly end of data and nothing to return
+                if (_lastIndex >= _dataSource.Length) // certanly end of data and nothing to return
                 {
                     line = string.Empty;
                     return false;
                 }
                 var newIndex = _dataSource.IndexOf('\n', _lastIndex);
-                if (newIndex == -1) // end of data but there is some data left
+                if (newIndex == -1) // end of line not found but there is some data left
                 {
                     newIndex = _dataSource.Length; // return rest of data
                 }
                 var resultLength = newIndex - _lastIndex;
-                if(_dataSource[newIndex-1] == '\r') // in case new line resprented by two symbols
+                if (_dataSource[newIndex - 1] == '\r') // in case new line resprented by two symbols
                 {
                     resultLength--;
                 }

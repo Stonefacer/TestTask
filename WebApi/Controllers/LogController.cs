@@ -35,7 +35,7 @@ namespace WebApi.Controllers
         }
 
         // api/log/{offset}/{limit}?start={datetime}
-        public IEnumerable<RequestData> Get(long offset, int limit, DateTime start)
+        public IEnumerable<RequestData> Get(long offset, int limit, [FromUri]DateTime start)
         {
             if (offset < 0)
             {
@@ -49,7 +49,7 @@ namespace WebApi.Controllers
         }
 
         // api/log/{offset}/{limit}?start={datetime}&end={datetime}
-        public IEnumerable<RequestData> Get(long offset, int limit, DateTime start, DateTime end)
+        public IEnumerable<RequestData> Get(long offset, int limit, [FromUri]DateTime start, [FromUri]DateTime end)
         {
             if (offset < 0)
             {

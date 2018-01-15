@@ -16,7 +16,6 @@ namespace Database
     {
 
         private SqlConnection _sqlConnection;
-        private string _connectionString;
         private bool _silent;
 
         /// <summary>
@@ -25,7 +24,6 @@ namespace Database
         /// <param name="silent">if true any methods won't throw any exceptions</param>
         public DatabaseProvider(string connectionString, bool silent)
         {
-            _connectionString = connectionString;
             _sqlConnection = new SqlConnection(connectionString);
             _silent = silent;
         }
@@ -34,7 +32,7 @@ namespace Database
         {
             try
             {
-                if (_sqlConnection.State == System.Data.ConnectionState.Closed)
+                if (_sqlConnection.State == ConnectionState.Closed)
                 {
                     _sqlConnection.Open();
                 }
@@ -79,9 +77,16 @@ namespace Database
                     {
                         command.Parameters.Add(new SqlParameter("@DataSize", requestData.DataSize));
                     }
+                    if (string.IsNullOrEmpty(requestData.ClientLocation))
+                    {
+                        command.Parameters.Add(new SqlParameter("@ClientLocation", DBNull.Value));
+                    }
+                    else
+                    {
+                        command.Parameters.Add(new SqlParameter("@ClientLocation", requestData.ClientLocation));
+                    }
                     command.Parameters.Add(new SqlParameter("@Route", requestData.Route));
                     command.Parameters.Add(new SqlParameter("@ClientHostname", requestData.ClientHostname));
-                    command.Parameters.Add(new SqlParameter("@ClientLocation", requestData.ClientLocation));
                     command.Parameters.Add(new SqlParameter("@StatusCode", requestData.StatusCode));
                     command.Parameters.Add(new SqlParameter("@Datetime", requestData.Datetime));
                     
