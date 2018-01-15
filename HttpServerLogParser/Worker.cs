@@ -8,6 +8,7 @@ using Models;
 using LogParser;
 using GeoLocation;
 using Database;
+using System.Threading;
 
 namespace HttpServerLogParser
 {
@@ -27,11 +28,12 @@ namespace HttpServerLogParser
             _database = database;
         }
 
-        public void ProcessFile()
+        public void ProcessFile(CancellationToken cancellationToken)
         {
             var keepAlive = true;
             while (keepAlive)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 RequestData requestData;
                 var saveData = _parser.ProcessOneLine(out requestData, out keepAlive);
                 if (saveData)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HttpServerLogParser
@@ -12,5 +13,6 @@ namespace HttpServerLogParser
         public string Filename { get; set; }
         public string ConnectionString { get; set; }
         public string GeolocationServer { get; set; }
+        public CancellationTokenSource Cancelation { get; set; }
     }
 }

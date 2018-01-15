@@ -27,12 +27,13 @@ namespace GeoLocation
         /// </summary>
         private const int TryTimeout = 100;
 
-        private string _freegeoipHostname;
+        
+        private string _requestUrlTemplate;
         private ConcurrentDictionary<string, string> _cache = new ConcurrentDictionary<string, string>();
 
         public GeoLocationFreegeoip(string freegeoipHostname)
         {
-            _freegeoipHostname = freegeoipHostname;
+            _requestUrlTemplate = string.Format("{0}/json/{{0}}", freegeoipHostname);
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace GeoLocation
         /// <returns>true if sucess and false otherwise</returns>
         private bool SendRequest(string host, out string country)
         {
-            var httpRequestUrl = string.Format("{0}/json/{1}", _freegeoipHostname, host);
+            var httpRequestUrl = string.Format(_requestUrlTemplate, host);
             using (var webClient = new WebClient())
             {
                 webClient.Encoding = Encoding.UTF8;

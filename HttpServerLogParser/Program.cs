@@ -37,9 +37,10 @@ warning:
         {
             var ninject = NinjectCommon.Instance();
             var settings = ninject.Kernel.Get<Settings>();
-            
+
             // default settings
             settings.ThreadsCount = 1;
+            settings.Cancelation = new CancellationTokenSource();
 
             // save start date time for benchmarks
             var startDatetime = DateTime.Now;
@@ -66,6 +67,9 @@ warning:
             ninject.BindLinesSource(fileInfo);
             ninject.BindGeolocationServer(settings.GeolocationServer);
 
+            // bind ctrl+c event so we could free resources correctly
+            Console.CancelKeyPress += Console_CancelKeyPress;
+
             // create and start worker threads
             var threads = CreateWorkers();
 
@@ -83,10 +87,18 @@ warning:
             }
 
             var timeSpend = DateTime.Now - startDatetime;
-            Console.WriteLine("Done in {0:00}:{1:00}:{2:00}.{3:000}", timeSpend.Hours, timeSpend.Minutes, timeSpend.Seconds, timeSpend.Milliseconds);
-#if DEBUG
-            Console.ReadKey();
-#endif
+            Console.WriteLine("Done in {0:00}:{1:00}:{2:00}.{3:000}", timeSpend.TotalHours, timeSpend.Minutes, timeSpend.Seconds, timeSpend.Milliseconds);
+        }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            PrintMessage("Exiting...");
+            var ninject = NinjectCommon.Instance();
+            var settings = ninject.Kernel.Get<Settings>();
+            // request termination of worker threads
+            settings.Cancelation.Cancel();
+            // cancel process termination
+            e.Cancel = true;
         }
 
         /// <summary>
@@ -98,13 +110,48 @@ warning:
         }
 
         /// <summary>
+        /// Prints given message
+        /// </summary>
+        /// <param name="message">message to print</param>
+        private static void PrintMessage(string message)
+        {
+            lock (_syncOutput)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        /// <summary>
+        /// Output error message based on failed line and exception
+        /// </summary>
+        /// <param name="lineWithError">failed line</param>
+        /// <param name="exception">thrown exception</param>
+        private static void PrintFailedMessage(string lineWithError, Exception exception)
+        {
+            lock (_syncOutput)
+            {
+                Console.WriteLine("Failed to parse line: \"{0}\"", lineWithError);
+                Console.WriteLine("Thread terminated!");
+                Console.WriteLine("-------------Exceptions------------");
+                while (exception != null)
+                {
+                    Console.WriteLine("Type: {0}", exception.GetType().FullName);
+                    Console.WriteLine("Message: {0}", exception.Message);
+                    Console.WriteLine("Stack trace: {0}", exception.StackTrace);
+                    Console.WriteLine();
+                    exception = exception.InnerException;
+                }
+            }
+        }
+
+        /// <summary>
         /// Parse command line arguments
         /// </summary>
         /// <returns>returns true if sucess and false otherwise</returns>
         private static bool ParseCommandLineArguments(string[] args)
         {
             var ninject = NinjectCommon.Instance();
-            Settings settings = ninject.Kernel.Get<Settings>();
+            var settings = ninject.Kernel.Get<Settings>();
             if (args.Length < 3)
             {
                 PrintHelp();
@@ -184,39 +231,19 @@ warning:
         private static void ThreadWorker()
         {
             var ninject = NinjectCommon.Instance();
-            using (var worker = ninject.Kernel.Get<Worker>())
+            var settings = ninject.Kernel.Get<Settings>();
+            var worker = ninject.Kernel.Get<Worker>();
+            try
             {
-                try
-                {
-                    worker.ProcessFile();
-                }
-                catch (Exception ex)
-                {
-                    FailedMessage(worker.CurrentLine, ex);
-                }
+                worker.ProcessFile(settings.Cancelation.Token);
             }
-        }
-
-        /// <summary>
-        /// Output error message based on failed line and exception
-        /// </summary>
-        /// <param name="lineWithError">failed line</param>
-        /// <param name="exception">thrown exception</param>
-        private static void FailedMessage(string lineWithError, Exception exception)
-        {
-            lock (_syncOutput)
+            catch (OperationCanceledException)
             {
-                Console.WriteLine("Failed to parse line: \"{0}\"", lineWithError);
-                Console.WriteLine("Thread terminated!");
-                Console.WriteLine("-------------Exceptions------------");
-                while (exception != null)
-                {
-                    Console.WriteLine("Type: {0}", exception.GetType().FullName);
-                    Console.WriteLine("Message: {0}", exception.Message);
-                    Console.WriteLine("Stack trace: {0}", exception.StackTrace);
-                    Console.WriteLine();
-                    exception = exception.InnerException;
-                }
+                // cancelation requested
+            }
+            catch (Exception ex)
+            {
+                PrintFailedMessage(worker.CurrentLine, ex);
             }
         }
     }

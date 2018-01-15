@@ -40,8 +40,8 @@ namespace HttpServerLogParser
         {
             _kernel = new StandardKernel();
             _kernel.Bind<Settings>().ToSelf().InSingletonScope();
-            _kernel.Bind<IParser>().To<Parser>();
-            _kernel.Bind<Worker>().ToSelf();
+            _kernel.Bind<IParser>().To<Parser>().InTransientScope();
+            _kernel.Bind<Worker>().ToSelf().InThreadScope();
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace HttpServerLogParser
         /// <param name="connectionString">database connection string</param>
         public void BindDatabaseProvider(string connectionString)
         {
-            _kernel.Bind<IDatabaseProvider>().ToMethod(x => new DatabaseProvider(connectionString, false));
+            _kernel.Bind<IDatabaseProvider>().ToMethod(x => new DatabaseProvider(connectionString, false)).InTransientScope(); // must be disposed manually
         }
 
         /// <summary>
