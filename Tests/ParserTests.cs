@@ -82,14 +82,14 @@ namespace Tests
                     QueryString = ""
                 }
             };
-            CheckFile("..\\..\\tests_logs\\perfect_file.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\perfect_file.log.txt", dataExpected);
         }
 
         [TestMethod]
         public void EmptyFileTest()
         {
             var dataExpected = new RequestData[0];
-            CheckFile("..\\..\\tests_logs\\empty.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\empty.log.txt", dataExpected);
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace Tests
                     Route = "/images/\">index of /images"
                 }
             };
-            CheckFile("..\\..\\tests_logs\\truncated_file.log", dataExpected);
+            CheckFile("..\\..\\tests_logs\\truncated_file.log.txt", dataExpected);
         }
 
     }

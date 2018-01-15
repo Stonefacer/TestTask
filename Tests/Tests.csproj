@@ -56,6 +56,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <Content Include="tests_logs\empty.log.txt" />
+    <Content Include="tests_logs\perfect_file.log.txt" />
+    <Content Include="tests_logs\truncated_file.log.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HttpServerLogParser\HttpServerLogParser.csproj">

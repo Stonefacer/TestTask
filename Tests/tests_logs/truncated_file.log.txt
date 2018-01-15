@@ -1,0 +1,10 @@
+64.242.88.10 - - [07/Mar/2004:16:36:22 -0800] "GET /twiki/bin/rdiff/Main/WebIndex?rev1=1.2&rev2=1.1 HTTP/1.1" 200 46373
+dyn1-039.cc.umanitoba.ca - - [01/Jul/1995:01:42:28 -0400] "GET /htbin/wais.pl?SAREX-II" 200 7124
+lj1125.inktomisearch.com - - [07/Mar/2004:18:06:14 -0800] "GET /twiki/bin/oops/Sandbox/WebChanges HTTP/1.0" 200 209
+lj1125.inktomisearch.com - - [07/Mar/2004:18:06:14 -0800] "GET /twiki/bin/oops/Sandbox/WebChanges  HTTP/1.0" 200 209
+knuth.mtsu.edu - - [22/Jul/1995:01:49:32 -0400] "GET /images/">index of /images HTTP/1.0" 404 -
+
+
+
+
+

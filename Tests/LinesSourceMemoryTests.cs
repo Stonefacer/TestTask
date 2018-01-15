@@ -14,7 +14,7 @@ namespace Tests
         [TestMethod]
         public void PerfectFileTest()
         {
-            var fileInfo = new FileInfo("..\\..\\tests_logs\\perfect_file.log");
+            var fileInfo = new FileInfo("..\\..\\tests_logs\\perfect_file.log.txt");
             ILinesSource linesSource = LinesSourceMemory.CreateFromFile(fileInfo);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
@@ -36,7 +36,7 @@ namespace Tests
         [TestMethod]
         public void EmptyFileTest()
         {
-            var fileInfo = new FileInfo("..\\..\\tests_logs\\empty.log");
+            var fileInfo = new FileInfo("..\\..\\tests_logs\\empty.log.txt");
             ILinesSource linesSource = LinesSourceMemory.CreateFromFile(fileInfo);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
@@ -58,7 +58,7 @@ namespace Tests
         [TestMethod]
         public void TruncatedFileTest()
         {
-            var fileInfo = new FileInfo("..\\..\\tests_logs\\truncated_file.log");
+            var fileInfo = new FileInfo("..\\..\\tests_logs\\truncated_file.log.txt");
             ILinesSource linesSource = LinesSourceMemory.CreateFromFile(fileInfo);
             using (var sr = new StreamReader(fileInfo.OpenRead()))
             {
