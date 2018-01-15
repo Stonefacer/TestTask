@@ -22,6 +22,9 @@ namespace GeoLocation
         public GeoLocationFreegeoip(string freegeoipHostname, int maxTriesCount, int tryTimeout, int maxCacheSize)
         {
             _requestUrlTemplate = string.Format("{0}/json/{{0}}", freegeoipHostname);
+            _maxTriesCount = maxTriesCount;
+            _tryTimeout = tryTimeout;
+            _maxCacheSize = maxCacheSize;
         }
 
         /// <summary>

@@ -54,7 +54,7 @@
     <Compile Include="Settings\GeolocationSettings.cs" />
     <Compile Include="Settings\ParserSettings.cs" />
     <Compile Include="Settings\ReaderSettings.cs" />
-    <Compile Include="Settings\Settings.cs" />
+    <Compile Include="Settings\ApplicationSettings.cs" />
     <Compile Include="Worker.cs" />
   </ItemGroup>
   <ItemGroup>

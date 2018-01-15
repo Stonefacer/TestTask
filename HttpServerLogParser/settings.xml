@@ -5,8 +5,8 @@
   
   <!-- Geolocation settings -->
   <Geolocation>
-    <!-- http://freegeoip.net by default -->
-    <Server>http://localhost:8080</Server>
+    <!-- http://freegeoip.net by default or http://localhost:8080 for local instance of freegeoip -->
+    <Server>http://freegeoip.net</Server>
     <!-- Results will be cached until cache size exceeds that number -->
     <MaxCacheSize>1000000</MaxCacheSize>
     <!-- If server failed to respond we will try again and again untill count of tries exceeds that number or server respond correctly -->

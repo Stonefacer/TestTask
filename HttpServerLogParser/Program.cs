@@ -22,15 +22,13 @@ namespace HttpServerLogParser
     {
         private const string HelpMessage = @"
 usage:
-    HttpServerLogParser.exe [/t <number>] <file to parse> <freegeoip server> <connection string>
+    HttpServerLogParser.exe [/t <number>] <file to parse>
 arguments:
     /t - threads count (optional)
     file to parse - path to the file needed to be parsed
-    freegeoip server - used for geolocation. Should be ""localhost:8080"" if you start local freegeoip server or ""freegeoip.net"" otherwise
-    connection string - database connection string
 examples:
-    HttpServerLogParser.exe ""access_log_Jul95"" ""freegeoip.net"" ""Data Source=DESKTOP\SQLEXPRESS14;Initial Catalog=HttpServerStatistic;Persist Security Info=True;User ID=ttt;Password=q1w2e3r4""
-    HttpServerLogParser.exe /t 4 ""access_log_Jul95"" ""localhost:8080"" ""Data Source=DESKTOP\SQLEXPRESS14;Initial Catalog=HttpServerStatistic;Persist Security Info=True;User ID=ttt;Password=q1w2e3r4""
+    HttpServerLogParser.exe ""access_log_Jul95""
+    HttpServerLogParser.exe /t 4 ""access_log_Jul95""
 warning:
     only default log format is supported (which is ""%h %l %u %t \""%r\"" %>s %b"")
 ";
@@ -113,42 +111,7 @@ warning:
             using (var streamReader = new StreamReader("settings.xml"))
             {
                 var fileSettings = new FileSettings();
-                fileSettings.Geolocation = new GeolocationSettings();
-                fileSettings.ConnectionString = "";
-                fileSettings.Geolocation.Server = "";
                 return xmlSerializer.Deserialize(streamReader) as FileSettings;
-            }
-        }
-
-        private static void SaveSettingsFile()
-        {
-            var xmlSerializer = new XmlSerializer(typeof(FileSettings));
-            using (var streamWriter = new StreamWriter("settings.xml"))
-            {
-                var fileSettings = new FileSettings();
-                fileSettings.ConnectionString = "";
-
-                fileSettings.Geolocation = new GeolocationSettings();
-                fileSettings.Geolocation.Server = "";
-
-                fileSettings.Parser = new ParserSettings();
-                fileSettings.Parser.SkippibaleExtensions = new string[]
-                {
-                    "css",
-                    "map",
-                    "jpg",
-                    "jpeg",
-                    "png",
-                    "gif",
-                    "bmp",
-                    "tiff",
-                    "js",
-                    "xbm"
-                };
-
-                fileSettings.FileReader = new FileReaderSettings();
-                fileSettings.FileReader.MaxBufferSize = 1000000;
-                xmlSerializer.Serialize(streamWriter, fileSettings);
             }
         }
 
